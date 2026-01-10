@@ -69,7 +69,7 @@ class LabelTarget(QLabel):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
         painter.setRenderHint(QPainter.LosslessImageRendering)
-        painter.setRenderHint(QPainter.HighQualityAntialiasing)
+        # Note: HighQualityAntialiasing is deprecated in newer PyQt5 versions
 
         painter.drawPixmap(self.__center.x() - self.__temporary.width() // 2,
                            self.__center.y() - self.__temporary.height() // 2,

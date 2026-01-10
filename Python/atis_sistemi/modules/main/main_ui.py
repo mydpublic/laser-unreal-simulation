@@ -38,8 +38,7 @@ class MainUI(QtWidgets.QMainWindow):
         self.__target_ui.label_target.update()
 
         if len(self.__devices) > 0:
-            # self.__init_camera(self.__devices[0])
-            self.__init_camera('test.mp4')
+            self.__init_camera(self.__devices[0])
         else:
             QMessageBox.about(self, 'Warning', 'Camera device not found!')
 
@@ -174,9 +173,11 @@ class MainUI(QtWidgets.QMainWindow):
         self.__target_ui.close()
         self.__perspective_ui.close()
 
-        self.__worker.isWorkerAlive = False
-        self.__worker.isCameraRunning = False
-        self.__worker.isDetectionRunning = False
+        # Check if worker exists before accessing (worker may not be initialized if no camera found)
+        if hasattr(self, '_MainUI__worker'):
+            self.__worker.isWorkerAlive = False
+            self.__worker.isCameraRunning = False
+            self.__worker.isDetectionRunning = False
 
     def __change_camera(self, camera_id):
         if self.__thread.isRunning():
@@ -303,10 +304,10 @@ class MainUI(QtWidgets.QMainWindow):
                 'width': self.__worker.available_width,
                 'height': self.__worker.available_height
             },
-            'shots': self.label_camera.all_points
+            'shots': self.__target_ui.label_target.all_points
         }
 
-        self.__filer.write_to_file(self.label_camera.grab(), data)
+        self.__filer.write_to_file(self.__target_ui.label_target.grab(), data)
         QMessageBox.about(self, "Saved", 'Data saved to the file')
 
     def load(self):

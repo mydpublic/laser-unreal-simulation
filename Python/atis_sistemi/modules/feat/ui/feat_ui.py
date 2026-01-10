@@ -97,7 +97,7 @@ class FeatUI(QtWidgets.QDialog):
         if len(self.label_camera.points) > 2:
             instant = list()
             for point in self.label_camera.points:
-                instant.append(QPoint(point.x() / self.__scale_width, point.y() / self.__scale_height))
+                instant.append(QPoint(int(point.x() / self.__scale_width), int(point.y() / self.__scale_height)))
             self.feat_change_signal.emit(instant)
             self.button_calibrate.setEnabled(False)
         else:
