@@ -59,3 +59,19 @@ class DetectionConstants:
 
     CANNY_THRESHOLD1 = 30
     CANNY_THRESHOLD2 = 200
+
+
+class NetworkConstants:
+    """Network configuration for Unreal Engine communication"""
+    # Unreal Engine listening address
+    HOST = "127.0.0.1"
+    PORT = 7777
+    
+    # Protocol: "UDP" (low latency) or "TCP" (reliable)
+    PROTOCOL = "UDP"
+    
+    # Enable/disable network transmission
+    ENABLED = True
+    
+    # Heartbeat interval in seconds
+    HEARTBEAT_INTERVAL = 5.0

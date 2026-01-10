@@ -41,7 +41,7 @@ class Detection:
         # İki maskeyi birleştir ve kırmızı piksel sayısını döndür
         return np.count_nonzero((mask_left | mask_right))
 
-    def detect(self, image):
+    def detect(self, image, normalize: bool = False):
         """
         Gelen frame'de lazer atış noktalarını tespit eder.
         
@@ -55,10 +55,15 @@ class Detection:
         
         Args:
             image: BGR formatında giriş görüntüsü
+            normalize: True ise koordinatları 0-1 arasına normalize eder
             
         Returns:
             Tespit edilen lazer noktalarının merkez koordinatları [(x, y), ...]
+            normalize=True ise: [(0.0-1.0, 0.0-1.0), ...]
         """
+        # Görüntü boyutlarını al (normalize için)
+        height, width = image.shape[:2]
+        
         # Gaussian blur uygula (5x5 kernel ile gürültü azaltma)
         blurred_image = cv2.GaussianBlur(image, DetectionConstants.KERNEL_SIZE, DetectionConstants.SIGMA_X)
 
@@ -102,8 +107,15 @@ class Detection:
                     # Dikdörtgen içindeki bölgenin gerçekten kırmızı olup olmadığını kontrol et
                     # (Yanlış pozitif tespitleri engeller)
                     if self.__is_red(image[y:y + height, x:x + width]):
-                        # Dikdörtgenin merkez noktasını hesapla ve listeye ekle
-                        points.append((x + width // 2, (y + height // 2)))
+                        # Dikdörtgenin merkez noktasını hesapla
+                        center_x = x + width // 2
+                        center_y = y + height // 2
+                        
+                        # Normalize edilmiş veya pixel koordinatlarını ekle
+                        if normalize:
+                            points.append((center_x / width, center_y / height))
+                        else:
+                            points.append((center_x, center_y))
             
             # Tespit edilen tüm noktaları döndür
             return points

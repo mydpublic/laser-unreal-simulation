@@ -8,9 +8,10 @@ import cv2
 import numpy as np
 from PyQt5.QtCore import QObject, pyqtSignal
 
-from modules.common.constants import CameraConstants
+from modules.common.constants import CameraConstants, NetworkConstants
 from modules.common.detection import Detection
 from modules.common.fps import FPS
+from modules.common.network import LaserSocketClient
 from modules.feat.feat import Feat
 from modules.perspective.perspective import Perspective
 
@@ -43,6 +44,18 @@ class CameraWork(QObject):
 
         self.__fps = FPS()
         self.__detection = Detection()
+        
+        # Network client for Unreal Engine communication
+        self.__network_client = LaserSocketClient(
+            host=NetworkConstants.HOST,
+            port=NetworkConstants.PORT,
+            protocol=NetworkConstants.PROTOCOL
+        )
+        self.__network_enabled = NetworkConstants.ENABLED
+        
+        # Try to connect (will auto-reconnect if fails)
+        if self.__network_enabled:
+            self.__network_client.connect()
 
         self.isWorkerAlive = True
         self.isCameraRunning = True
@@ -67,6 +80,12 @@ class CameraWork(QObject):
                 if len(points) > 0 and time.time() - begin > delay:
                     begin = time.time()
                     self.detected_signal.emit([points[0], datetime.now().strftime("%H:%M:%S")])
+                    
+                    # Send normalized coordinates to Unreal Engine
+                    if self.__network_enabled:
+                        x_norm = points[0][0] / self.available_width
+                        y_norm = points[0][1] / self.available_height
+                        self.__network_client.send_hit_event(x_norm, y_norm, confidence=0.9)
 
             if self.isCameraRunning:
                 if len(pending_task) < cpu_count:
@@ -85,5 +104,9 @@ class CameraWork(QObject):
                         pending_task.append(task)
                     else:
                         self.pixmap_change_signal.emit(wrapped)
+        
+        # Cleanup: disconnect network and release camera
+        if self.__network_enabled:
+            self.__network_client.disconnect()
         self.__capture.release()
         self.finished.emit()
