@@ -36,10 +36,3 @@ Saved/
 *.suo
 *.xcodeproj
 *.xcworkspace
-
-# Large files
-*.exe
-*.pkg
-*.uasset
-*.umap
-*.bin
